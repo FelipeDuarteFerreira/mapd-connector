@@ -12,6 +12,7 @@ var Q = thrift.Q;
 var common_ttypes = require('./common_types');
 var completion_hints_ttypes = require('./completion_hints_types');
 var serialized_result_set_ttypes = require('./serialized_result_set_types');
+var extension_functions_ttypes = require('./extension_functions_types');
 
 
 var ttypes = module.exports = {};
@@ -1285,6 +1286,7 @@ var TQueryResult = module.exports.TQueryResult = function(args) {
   this.execution_time_ms = null;
   this.total_time_ms = null;
   this.nonce = null;
+  this.debug = null;
   if (args) {
     if (args.row_set !== undefined && args.row_set !== null) {
       this.row_set = new ttypes.TRowSet(args.row_set);
@@ -1297,6 +1299,9 @@ var TQueryResult = module.exports.TQueryResult = function(args) {
     }
     if (args.nonce !== undefined && args.nonce !== null) {
       this.nonce = args.nonce;
+    }
+    if (args.debug !== undefined && args.debug !== null) {
+      this.debug = args.debug;
     }
   }
 };
@@ -1343,6 +1348,13 @@ TQueryResult.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 5:
+      if (ftype == Thrift.Type.STRING) {
+        this.debug = input.readString();
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -1374,6 +1386,11 @@ TQueryResult.prototype.write = function(output) {
     output.writeString(this.nonce);
     output.writeFieldEnd();
   }
+  if (this.debug !== null && this.debug !== undefined) {
+    output.writeFieldBegin('debug', Thrift.Type.STRING, 5);
+    output.writeString(this.debug);
+    output.writeFieldEnd();
+  }
   output.writeFieldStop();
   output.writeStructEnd();
   return;
@@ -1384,6 +1401,8 @@ var TDataFrame = module.exports.TDataFrame = function(args) {
   this.sm_size = null;
   this.df_handle = null;
   this.df_size = null;
+  this.execution_time_ms = null;
+  this.arrow_conversion_time_ms = null;
   if (args) {
     if (args.sm_handle !== undefined && args.sm_handle !== null) {
       this.sm_handle = args.sm_handle;
@@ -1396,6 +1415,12 @@ var TDataFrame = module.exports.TDataFrame = function(args) {
     }
     if (args.df_size !== undefined && args.df_size !== null) {
       this.df_size = args.df_size;
+    }
+    if (args.execution_time_ms !== undefined && args.execution_time_ms !== null) {
+      this.execution_time_ms = args.execution_time_ms;
+    }
+    if (args.arrow_conversion_time_ms !== undefined && args.arrow_conversion_time_ms !== null) {
+      this.arrow_conversion_time_ms = args.arrow_conversion_time_ms;
     }
   }
 };
@@ -1441,6 +1466,20 @@ TDataFrame.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 5:
+      if (ftype == Thrift.Type.I64) {
+        this.execution_time_ms = input.readI64();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 6:
+      if (ftype == Thrift.Type.I64) {
+        this.arrow_conversion_time_ms = input.readI64();
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -1470,6 +1509,16 @@ TDataFrame.prototype.write = function(output) {
   if (this.df_size !== null && this.df_size !== undefined) {
     output.writeFieldBegin('df_size', Thrift.Type.I64, 4);
     output.writeI64(this.df_size);
+    output.writeFieldEnd();
+  }
+  if (this.execution_time_ms !== null && this.execution_time_ms !== undefined) {
+    output.writeFieldBegin('execution_time_ms', Thrift.Type.I64, 5);
+    output.writeI64(this.execution_time_ms);
+    output.writeFieldEnd();
+  }
+  if (this.arrow_conversion_time_ms !== null && this.arrow_conversion_time_ms !== undefined) {
+    output.writeFieldBegin('arrow_conversion_time_ms', Thrift.Type.I64, 6);
+    output.writeI64(this.arrow_conversion_time_ms);
     output.writeFieldEnd();
   }
   output.writeFieldStop();
@@ -1622,6 +1671,8 @@ var TCopyParams = module.exports.TCopyParams = function(args) {
   this.sanitize_column_names = true;
   this.geo_layer_name = null;
   this.s3_endpoint = null;
+  this.geo_assign_render_groups = true;
+  this.geo_explode_collections = false;
   if (args) {
     if (args.delimiter !== undefined && args.delimiter !== null) {
       this.delimiter = args.delimiter;
@@ -1688,6 +1739,12 @@ var TCopyParams = module.exports.TCopyParams = function(args) {
     }
     if (args.s3_endpoint !== undefined && args.s3_endpoint !== null) {
       this.s3_endpoint = args.s3_endpoint;
+    }
+    if (args.geo_assign_render_groups !== undefined && args.geo_assign_render_groups !== null) {
+      this.geo_assign_render_groups = args.geo_assign_render_groups;
+    }
+    if (args.geo_explode_collections !== undefined && args.geo_explode_collections !== null) {
+      this.geo_explode_collections = args.geo_explode_collections;
     }
   }
 };
@@ -1859,6 +1916,20 @@ TCopyParams.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 23:
+      if (ftype == Thrift.Type.BOOL) {
+        this.geo_assign_render_groups = input.readBool();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 24:
+      if (ftype == Thrift.Type.BOOL) {
+        this.geo_explode_collections = input.readBool();
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -1978,6 +2049,16 @@ TCopyParams.prototype.write = function(output) {
   if (this.s3_endpoint !== null && this.s3_endpoint !== undefined) {
     output.writeFieldBegin('s3_endpoint', Thrift.Type.STRING, 22);
     output.writeString(this.s3_endpoint);
+    output.writeFieldEnd();
+  }
+  if (this.geo_assign_render_groups !== null && this.geo_assign_render_groups !== undefined) {
+    output.writeFieldBegin('geo_assign_render_groups', Thrift.Type.BOOL, 23);
+    output.writeBool(this.geo_assign_render_groups);
+    output.writeFieldEnd();
+  }
+  if (this.geo_explode_collections !== null && this.geo_explode_collections !== undefined) {
+    output.writeFieldBegin('geo_explode_collections', Thrift.Type.BOOL, 24);
+    output.writeBool(this.geo_explode_collections);
     output.writeFieldEnd();
   }
   output.writeFieldStop();
@@ -5100,6 +5181,7 @@ var TRawRenderPassDataResult = module.exports.TRawRenderPassDataResult = functio
   this.row_ids_B = null;
   this.table_ids = null;
   this.accum_data = null;
+  this.accum_depth = null;
   if (args) {
     if (args.num_pixel_channels !== undefined && args.num_pixel_channels !== null) {
       this.num_pixel_channels = args.num_pixel_channels;
@@ -5121,6 +5203,9 @@ var TRawRenderPassDataResult = module.exports.TRawRenderPassDataResult = functio
     }
     if (args.accum_data !== undefined && args.accum_data !== null) {
       this.accum_data = args.accum_data;
+    }
+    if (args.accum_depth !== undefined && args.accum_depth !== null) {
+      this.accum_depth = args.accum_depth;
     }
   }
 };
@@ -5187,6 +5272,13 @@ TRawRenderPassDataResult.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 8:
+      if (ftype == Thrift.Type.I32) {
+        this.accum_depth = input.readI32();
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -5231,6 +5323,11 @@ TRawRenderPassDataResult.prototype.write = function(output) {
   if (this.accum_data !== null && this.accum_data !== undefined) {
     output.writeFieldBegin('accum_data', Thrift.Type.STRING, 7);
     output.writeBinary(this.accum_data);
+    output.writeFieldEnd();
+  }
+  if (this.accum_depth !== null && this.accum_depth !== undefined) {
+    output.writeFieldBegin('accum_depth', Thrift.Type.I32, 8);
+    output.writeI32(this.accum_depth);
     output.writeFieldEnd();
   }
   output.writeFieldStop();
